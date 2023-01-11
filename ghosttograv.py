@@ -3,6 +3,7 @@ import json
 from types import SimpleNamespace
 from pathlib import Path
 
+# blog.md frontmatter based on the Grav blog skeleton
 blog_frontmatter = '''---
 title: Home
 sitemap:
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     posts_authors = ghostdata.db[0].data.posts_authors
 
     # Extract site title and description for blog.md
-    print("Extracting site title and description from settings...")
+    print("Extracting site title and description from settings for blog.md")
     site_title = ""
     site_description = ""
     for setting in settings:
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         blogmd = Path.joinpath(poutpath, f"blog.{args.lang}.md")
     else:
         blogmd = Path.joinpath(poutpath, "blog.md")
-    with blogmd.open('w') as blogfile:
+    with blogmd.open('w', encoding="utf8") as blogfile:
         blogfile.writelines(blog_frontmatter)
         blogfile.write(f"# {site_title}\n")
         blogfile.write(f"## {site_description}\n")
@@ -123,14 +124,15 @@ if __name__ == '__main__':
             itemmd = Path.joinpath(poutpath, Path(post.slug), f"item.{args.lang}.md")
         else:
             itemmd = Path.joinpath(poutpath, Path(post.slug), 'item.md')
-        with itemmd.open('w') as itemfile:
+        with itemmd.open('w', encoding="utf8") as itemfile:
             itemfile.write("---\n")
             itemfile.write(f"title: '{fix_apostrophe(post.title)}'\n")
             itemfile.write(f"author: {author}\n")
             itemfile.write("taxonomy:\n")
             itemfile.write("    category:\n")
             itemfile.write("        - blog\n")
-            itemfile.write(f"    tag: [{','.join(post_tags)}]\n")
+            if len(post_tags) > 0:
+                itemfile.write(f"    tag: [{','.join(post_tags)}]\n")
 
             if args.frontmatter is not None:
                 for fm in args.frontmatter:
@@ -142,6 +144,6 @@ if __name__ == '__main__':
                 itemfile.write("published: false\n")
 
             itemfile.write("---\n")
-            itemfile.writelines(post.plaintext)
+            itemfile.writelines(post.plaintext, )
 
     print("Finished processing json")
