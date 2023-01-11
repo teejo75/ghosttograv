@@ -2,6 +2,7 @@ import argparse
 import json
 from types import SimpleNamespace
 from pathlib import Path
+from slugify import slugify
 
 # blog.md frontmatter based on the Grav blog skeleton
 blog_frontmatter = '''---
@@ -28,8 +29,8 @@ pagination: true
 '''
 
 
-def fix_apostrophe(title):
-    return title.replace("'", "''")
+def fix_apostrophe(text):
+    return text.replace("'", "''")
 
 
 if __name__ == '__main__':
@@ -42,6 +43,9 @@ if __name__ == '__main__':
                         help="Language code to use as file suffix, eg 'item.en.md'. Omit to not have tag")
     parser.add_argument("-f", "--frontmatter", action="append", dest="frontmatter",
                         help="Add additional frontmatter string tags to item.md. Use as many times as required.")
+    parser.add_argument("-s", "--slug", action="store_true", dest="slug",
+                        help="If this argument is present, the post slug will be used as the item.md path. Otherwise, "
+                             "the path will be generated from the post title.")
     args = parser.parse_args()
     if args.outpath is not None:
         outpath = args.outpath
@@ -115,15 +119,20 @@ if __name__ == '__main__':
                     author = u.name
         else:
             author = users[0].name
+        # If -s or --slug is present use post.slug as item.md folder name
+        if args.slug is True:
+            itempath = Path.joinpath(poutpath, Path(post.slug))
+        else:
+            # Default use post title as item.md folder name
+            itempath = Path.joinpath(poutpath, Path(slugify(post.title)))
 
-        itempath = Path.joinpath(poutpath, Path(post.slug))
         if not itempath.exists():
             itempath.mkdir()
 
         if args.lang is not None:
-            itemmd = Path.joinpath(poutpath, Path(post.slug), f"item.{args.lang}.md")
+            itemmd = Path.joinpath(itempath, f"item.{args.lang}.md")
         else:
-            itemmd = Path.joinpath(poutpath, Path(post.slug), 'item.md')
+            itemmd = Path.joinpath(itempath, 'item.md')
         with itemmd.open('w', encoding="utf8") as itemfile:
             itemfile.write("---\n")
             itemfile.write(f"title: '{fix_apostrophe(post.title)}'\n")
