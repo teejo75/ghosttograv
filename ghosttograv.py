@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 from types import SimpleNamespace
 from pathlib import Path
 
@@ -24,7 +23,8 @@ content:
     pagination: true
     url_taxonomy_filters: true
 pagination: true
----'''
+---
+'''
 
 
 def fix_apostrophe(title):
@@ -81,8 +81,8 @@ if __name__ == '__main__':
         blogmd = Path.joinpath(poutpath, "blog.md")
     with blogmd.open('w') as blogfile:
         blogfile.writelines(blog_frontmatter)
-        blogfile.write(f"# {site_title}")
-        blogfile.write(f"## {site_description}")
+        blogfile.write(f"# {site_title}\n")
+        blogfile.write(f"## {site_description}\n")
 
     print(f"Extracting posts in to {outpath}")
     postcount = 1
@@ -115,27 +115,33 @@ if __name__ == '__main__':
         else:
             author = users[0].name
 
+        itempath = Path.joinpath(poutpath, Path(post.slug))
+        if not itempath.exists():
+            itempath.mkdir()
+
         if args.lang is not None:
             itemmd = Path.joinpath(poutpath, Path(post.slug), f"item.{args.lang}.md")
         else:
             itemmd = Path.joinpath(poutpath, Path(post.slug), 'item.md')
         with itemmd.open('w') as itemfile:
-            itemfile.write("---")
-            itemfile.write(f"title: '{fix_apostrophe(post.title)}'")
-            itemfile.write(f"author: {author}")
-            itemfile.write("taxonomy:")
-            itemfile.write("    category:")
-            itemfile.write("        - blog")
-            itemfile.write(f"    tag: [{','.join(post_tags)}]")
+            itemfile.write("---\n")
+            itemfile.write(f"title: '{fix_apostrophe(post.title)}'\n")
+            itemfile.write(f"author: {author}\n")
+            itemfile.write("taxonomy:\n")
+            itemfile.write("    category:\n")
+            itemfile.write("        - blog\n")
+            itemfile.write(f"    tag: [{','.join(post_tags)}]\n")
 
             if args.frontmatter is not None:
                 for fm in args.frontmatter:
-                    itemfile.write(f"{fm}")
+                    itemfile.write(f"{fm}\n")
 
             # My ghostfile post date format matches more or less what I use in Grav so I don't need to change it much.
-            itemfile.write(f"date: '{post.created_at[:-3]}'")  # Should remove the seconds from the timestamp
+            itemfile.write(f"date: '{post.created_at[:-3]}'\n")  # Should remove the seconds from the timestamp
             if post.status == "draft":
-                itemfile.write("published: false")
+                itemfile.write("published: false\n")
 
-            itemfile.write("---")
+            itemfile.write("---\n")
             itemfile.writelines(post.plaintext)
+
+    print("Finished processing json")
