@@ -16,9 +16,13 @@ This script will convert a ghost blog export to grav blog item.md files.
 I largely wrote this to convert my own data, so I've made some assumptions.
 I thought other people may find this useful, so I added some features like the lang and frontmatter options.
 
-This script assumes everything is a post. If the status is draft it will add the `published: false` tag
-to the frontmatter. Don't automatically assume that the output is perfect. You will need to go through exported post 
-to verify that it is correct, and fix what you need to fix.
+This script does not distinguish betwen pages and posts in the ghost export. 
+If the post status is draft it will add the `published: false` tag to the item.md frontmatter.
+
+The script extracts authors and applies them to their respective posts.
+If there is only one user, they are set as the post author.
+The script automatically adds the 'blog' category taxonomy to each item.md.
+If there are any tags applied to a post, the script will extract them and apply them to the respective item.md.
 
 This script does not convert the post text to markdown, it writes it as-is from the plaintext key.
 This script also does not handle images at all.
